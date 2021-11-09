@@ -1,0 +1,146 @@
+version: '2.4'
+
+services:
+  proxy:
+    container_name: sigaa_proxy
+    build:
+      dockerfile: Dockerfile
+      context: .
+    cpus: '0.25'
+    mem_limit: 128m
+    restart: always
+    environment:
+      SERVER_NAME: app.gambiarra.net
+      API_HOST: sigaa_nginx
+      API_PORT: 80
+      FRONT_HOST: sigaa_frontend
+      FRONT_PORT: 80
+    read_only: true
+    volumes:
+      - type: volume
+        source: proxy_cache
+        target: /var/cache/nginx
+        read_only: false
+      - type: volume
+        source: proxy_pid
+        target: /var/run
+        read_only: false
+      - type: volume
+        source: nginx_conf
+        target: /etc/nginx/conf.d/
+        read_only: false
+    ports:
+      - "80:80"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    container_name: sigaa_nginx
+    image: fabianoshz/nginx:v0.0.2-alpha
+    cpus: '0.25'
+    mem_limit: 128m
+    restart: always
+    read_only: true
+    environment:
+      API_HOST: sigaa_php
+      API_PORT: 9000
+    volumes:
+      - type: volume
+        source: nginx_cache
+        target: /var/cache/nginx
+        read_only: false
+      - type: volume
+        source: nginx_pid
+        target: /var/run
+        read_only: false
+      - type: volume
+        source: nginx_conf
+        target: /etc/nginx/conf.d/
+        read_only: false
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  php:
+    container_name: sigaa_php
+    image: fabianoshz/php-fpm:v0.0.2-alpha
+    cpus: '0.5'
+    mem_limit: 256m
+    restart: always
+    environment:
+      APP_ENV: "production"
+      APP_DEBUG: "false"
+      APP_KEY: "base64:EtHozLTRoruusv+FNldXNbSB+hEo+Z1wPw1E6DIPRYw="
+      DB_CONNECTION: "mysql"
+      DB_HOST: "sigaa_database"
+      DB_PORT: "3306"
+      DB_DATABASE: "sigaa"
+      DB_USERNAME: "sigaa"
+      DB_PASSWORD: "sigaa"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      SESSION_DOMAIN: "gambiarra.net"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    container_name: sigaa_frontend
+    image: fabianoshz/frontend:v0.0.2-alpha
+    cpus: '0.5'
+    mem_limit: 512m
+    restart: always
+    environment:
+      NODE_ENV: "production"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  database:
+    container_name: sigaa_database
+    image: mysql:8.0
+    cpus: '1'
+    mem_limit: 1024m
+    restart: always
+    environment:
+      MYSQL_DATABASE: sigaa
+      MYSQL_USER: sigaa
+      MYSQL_PASSWORD: sigaa
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    read_only: true
+    volumes:
+      - type: volume
+        source: mysql_lib
+        target: /var/lib/mysql
+        read_only: false
+      - type: volume
+        source: mysql_tmp
+        target: /tmp
+        read_only: false
+      - type: volume
+        source: mysql_pid
+        target: /var/run
+        read_only: false
+    user: mysql
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  proxy_cache:
+  proxy_pid:
+  proxy_conf:
+  nginx_cache:
+  nginx_pid:
+  nginx_conf:
+  mysql_lib:
+  mysql_tmp:
+  mysql_pid:
+
+# docker-compose up
+# docker-compose run php artisan migrate --seed # Only the first time
