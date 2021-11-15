@@ -6,7 +6,7 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-    cpus: '0.25'
+    cpus: 0.25
     mem_limit: 128m
     restart: always
     environment:
@@ -39,7 +39,7 @@ services:
   nginx:
     container_name: sigaa_nginx
     image: fabianoshz/nginx:v0.0.2-alpha
-    cpus: '0.25'
+    cpus: 0.25
     mem_limit: 128m
     restart: always
     read_only: true
@@ -67,7 +67,7 @@ services:
   php:
     container_name: sigaa_php
     image: fabianoshz/php-fpm:v0.0.2-alpha
-    cpus: '0.5'
+    cpus: 0.5
     mem_limit: 256m
     restart: always
     environment:
@@ -90,7 +90,7 @@ services:
   frontend:
     container_name: sigaa_frontend
     image: fabianoshz/frontend:v0.0.2-alpha
-    cpus: '0.5'
+    cpus: 0.5
     mem_limit: 512m
     restart: always
     environment:
@@ -103,7 +103,7 @@ services:
   database:
     container_name: sigaa_database
     image: mysql:8.0
-    cpus: '1'
+    cpus: 1
     mem_limit: 1024m
     restart: always
     environment:
